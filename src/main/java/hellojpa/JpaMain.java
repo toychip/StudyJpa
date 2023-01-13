@@ -19,13 +19,20 @@ public class JpaMain {
 
         try {
             // 비영속 상태
-            Member member = new Member();
-            member.setId(100L);
-            member.setName("HelloJPA");
+            Member member = em.find(Member.class, 1L);
+            member.setId("FirstID");
+            member.setName("JpaChangeName");
+            // 업데이트시 em.persist를 사용하지 않아도된다.
 
             // 영속 상태
-            em.persist(member);
+//            em.persist(member);
             // 이때 쿼리가 날라가는 것이 아닌, 밑에 tx.commit할때 날라간다.
+
+            // 영속성 컨텐츠에서 배제하기, 더이상 관리 안함.
+            // em.detach(member);
+
+            // 영속성 전부 지우기
+            // em.clear();
 
 //            List<Member> result =  em.createQuery("select m from Member", Member.class)
 //                    .setFirstResult(1)
@@ -35,7 +42,7 @@ public class JpaMain {
 //            for (Member member : result) {
 //                System.out.println("member.name = " + member.getName());
 //            }
-
+            System.out.println("=========");
             tx.commit();
         }catch (Exception e){
             tx.rollback();
