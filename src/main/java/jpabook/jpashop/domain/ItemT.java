@@ -1,28 +1,25 @@
 package jpabook.jpashop.domain;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-public class Item {
+@Inheritance(strategy = InheritanceType.JOINED)
+//          SINGLE_TABLE, JOINED 둘 중에 선택해야함. TABLE_PER_CLASS 사용 xx 
+@DiscriminatorColumn  // (name = "DIS_TYPE")
+public abstract class ItemT {
 
     @Id @GeneratedValue
-    @Column(name = "ITEM_ID")
-    private Long Id;
+    private Long id;
     private String name;
     private int price;
-    private int stockQuantity;
 
-    @ManyToMany(mappedBy = "items")
-    private List<Category> categories = new ArrayList<>();
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public String getName() {
@@ -39,13 +36,5 @@ public class Item {
 
     public void setPrice(int price) {
         this.price = price;
-    }
-
-    public int getStockQuantity() {
-        return stockQuantity;
-    }
-
-    public void setStockQuantity(int stockQuantity) {
-        this.stockQuantity = stockQuantity;
     }
 }

@@ -16,6 +16,10 @@ public class Order {
 //    @Column(name = "MEMBER_ID")
 //    private Long memberId;  // 누가 주문했는지
 
+    @OneToOne
+    @JoinColumn(name = "DELIVERY_ID")
+    private Delivery delivery;
+
     @ManyToOne          // 이것이 연관관계의 주인이다. Many이므로, FK를 가지므로, 그래서 이 아래에 있는 member를 mappedby로 매핑해줘야한다.
     @JoinColumn(name = "MEMBER_ID")
     private Member member;

@@ -1,6 +1,7 @@
 package jpabook.jpashop;
 
 import jpabook.jpashop.domain.MemberT;
+import jpabook.jpashop.domain.Movie;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.Team;
 
@@ -23,7 +24,20 @@ public class JpaMain {
 
         try {
 
-            Order order = new Order();
+            Movie movie = new Movie();
+            movie.setDirector("aaa");
+            movie.setActor("bbb");
+            movie.setName("바람과 함께 사라지다");
+            movie.setPrice(10000);
+
+            em.persist(movie);
+
+            em.flush();
+            em.clear();
+
+            Movie findMovie = em.find(Movie.class, movie.getId());
+            System.out.println("findMovie = " + findMovie);
+
 
             tx.commit();
         }catch (Exception e){
