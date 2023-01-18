@@ -22,6 +22,10 @@ public class MemberT {
     @JoinColumn(name = "TEAM_ID")
     private Team team;
 
+    @OneToOne
+    @JoinColumn(name = "LOCKER_ID")
+    private Locker locker;
+
     public Long getId() {
         return id;
     }
@@ -40,6 +44,11 @@ public class MemberT {
 
     public Team getTeam() {
         return team;
+    }
+
+    public void changeTeam(Team team) {
+        this.team = team;
+        team.getMemberTS().add(this);       // jpamain에서 직접하지 말고 setter에서 해결하면 실수를 안할수있음
     }
 
     public void setTeam(Team team) {
