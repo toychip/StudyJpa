@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.persistence.CascadeType.*;
+import static javax.persistence.FetchType.LAZY;
+
 @Entity
 @Table(name = "ORDERS")
 public class Order extends BaseEntity{
@@ -16,15 +19,15 @@ public class Order extends BaseEntity{
 //    @Column(name = "MEMBER_ID")
 //    private Long memberId;  // 누가 주문했는지
 
-    @OneToOne
+    @OneToOne(fetch = LAZY, cascade = ALL)
     @JoinColumn(name = "DELIVERY_ID")
     private Delivery delivery;
 
-    @ManyToOne          // 이것이 연관관계의 주인이다. Many이므로, FK를 가지므로, 그래서 이 아래에 있는 member를 mappedby로 매핑해줘야한다.
+    @ManyToOne(fetch = LAZY)          // 이것이 연관관계의 주인이다. Many이므로, FK를 가지므로, 그래서 이 아래에 있는 member를 mappedby로 매핑해줘야한다.
     @JoinColumn(name = "MEMBER_ID")
     private Member member;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     private LocalDateTime orderDate;
