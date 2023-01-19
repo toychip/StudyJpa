@@ -17,7 +17,8 @@ public class Member extends BaseEntity {
 //    @Column(name = "TEAM_ID")
 //    private Long teamId;
 
-    @ManyToOne(fetch = FetchType.EAGER)      // LAZY 프록시로 가져옴, EAGER 즉시 로딩 바로 가져옴 member와 team을 계속 사용한다면
+    @ManyToOne(fetch = FetchType.LAZY)      // LAZY 프록시로 가져옴, EAGER 즉시 로딩 바로 가져옴 member와 team을 계속 사용한다면
+    // @ManyToOne, @OneToOne 둘 다 기본이 즉시로딩으로 설정되어 있으므로 (fetch = FetchType.LAZY) 설정 꼭 해주기
     // EAGER는 쿼리가 너무 많이 나가서 실무에서는 적용을 안하는게 좋다
     // 여러명의 멤버와 하나의 팀으로 매핑하므로 Memo 입장에서는 다, ManyToOne으로 매핑한다.
     @JoinColumn //(name = "TEAM_ID", insertable = false, updatable = false)

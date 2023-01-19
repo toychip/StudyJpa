@@ -1,9 +1,6 @@
 package hellojpa;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import java.util.List;
 
 public class JpaMain {
@@ -18,21 +15,31 @@ public class JpaMain {
         //code
 
         try {
+            Child child1 = new Child();
+            Child child2 = new Child();
+
+            Parent parent = new Parent();
+            parent.addChild(child1);
+            parent.addChild(child2);
+            em.persist(parent);
+
+//            cascade = CascadeType.ALL 를 사용하여 아래 생략 가능
+            em.persist(child1);
+            em.persist(child2);
+
+            em.flush();
+            em.clear();
+
+            Parent findParent = em.find(Parent.class, parent.getId());
+
+//            findParent.getChildList().remove(0);
+//             orphanRemoval = true 조건을 추가했기 때문에 remove 를 해서 childList 에서 빠진 고아 객체들은 삭제가 된다.
+//             이것도 cascade = CascadeType.ALL 과 마찬가지로 참조하는 곳이 하나일때만 사용해야한다.
+
+            em.remove(findParent);
+            findParent.getChildList().remove(0);
 
 
-
-            Member member1 = new Member();
-            member1.setUsername("member1");
-            em.persist(member1);
-
-            Member member2 = new Member();
-            member1.setUsername("member2");
-            em.persist(member2);
-
-//            em.fin
-
-
-            System.out.println("=========");
             tx.commit();
         }catch (Exception e){
             tx.rollback();
