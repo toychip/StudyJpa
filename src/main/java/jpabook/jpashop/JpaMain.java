@@ -1,16 +1,12 @@
 package jpabook.jpashop;
 
-import jpabook.jpashop.domain.MemberT;
-import jpabook.jpashop.domain.Movie;
-import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.domain.Team;
+import jpabook.jpashop.domain.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import java.lang.reflect.Member;
-import java.util.List;
+
 
 public class JpaMain {
 
@@ -24,19 +20,11 @@ public class JpaMain {
 
         try {
 
-            Movie movie = new Movie();
-            movie.setDirector("aaa");
-            movie.setActor("bbb");
-            movie.setName("바람과 함께 사라지다");
-            movie.setPrice(10000);
 
-            em.persist(movie);
 
-            em.flush();
-            em.clear();
 
-            Movie findMovie = em.find(Movie.class, movie.getId());
-            System.out.println("findMovie = " + findMovie);
+
+//            em.persist(book);
 
 
             tx.commit();

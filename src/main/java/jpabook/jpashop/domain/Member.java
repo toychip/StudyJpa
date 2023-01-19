@@ -1,11 +1,12 @@
 package jpabook.jpashop.domain;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Member {
+public class Member extends BaseEntity{
 
     @Id         // Entity에선 식별자를 필수로 해줘야ㅕ함.
     @GeneratedValue     // 생략하면 strategy가 auto
@@ -15,6 +16,7 @@ public class Member {
     private String city;
     private String street;
     private String zipcode;
+
 
     @OneToMany(mappedBy = "member")
     private List<Order> orders = new ArrayList<>();
