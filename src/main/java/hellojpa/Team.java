@@ -12,9 +12,9 @@ public class Team extends BaseEntity {
     private Long id;
     private String name;
 
-    @OneToMany(mappedBy = "team")       // 어떤것과 연결할지를 명시해주는데, team 이라는 객체와 매핑한다고 알려줌
-    private List<Member> memberTS = new ArrayList<>();
-    // team은 memberT와 나는 매핑했었음 착각하지 말기
+//    @OneToMany(mappedBy = "team")       // 어떤것과 연결할지를 명시해주는데, team 이라는 객체와 매핑한다고 알려줌
+//    private List<Member> member = new ArrayList<>();
+    // team은 member와 나는 매핑했었음 착각하지 말기
 
 
     public Long getId() {
@@ -34,9 +34,9 @@ public class Team extends BaseEntity {
 
     }
 
-    public List<Member> getMemberTS() {
-        return memberTS;
-    }
+//    public List<Member> getMemberS() {
+//        return memberS;
+//    }
 //
 //    public void setMemberTS(List<Member> memberTS) {
 //        this.memberTS = memberTS;

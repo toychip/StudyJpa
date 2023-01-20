@@ -3,9 +3,9 @@ package hellojpa;
 import javax.persistence.*;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
+//@Inheritance(strategy = InheritanceType.JOINED)
 //          SINGLE_TABLE, JOINED 둘 중에 선택해야함. TABLE_PER_CLASS 사용 xx
-@DiscriminatorColumn  // (name = "DIS_TYPE")
+//@DiscriminatorColumn  // (name = "DIS_TYPE")
 public abstract class Item {
 
     @Id @GeneratedValue
