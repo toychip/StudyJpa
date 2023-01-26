@@ -20,30 +20,79 @@ public class JpaMain {
             member.setAge(10);
             em.persist(member);
 
-            TypedQuery<Member> query = em.createQuery("select m From member m ", Member.class);
+//            TypedQuery<Member> query = em.createQuery("select m from Member m where m.username = :username", Member.class);
+//            query.setParameter("username", "member1");
+//            Member singleResult = query.getSingleResult();
+//            System.out.println("singleResult = " + singleResult.getUsername());
+            //      singleResult = member1
+//            위를 아래로 줄여씀
+
+
+            Member result = em.createQuery("select m from Member m where m.username = :username", Member.class)
+                    .setParameter("username", "member1")
+                    .getSingleResult();
+            System.out.println("singleResult = " + result.getUsername());
+
+            em.flush();
+            em.clear();
+
+            // --------------------------------------------여러 값 조회--------------------------------------------
+            // Query 타입으로 조회
+            System.out.println("\n************************ Query 타입으로 조회 ************************\n");
+            List manyValue = em.createQuery("select m.username, m.age from Member m").getResultList();
+
+            Object o = manyValue.get(0);
+            Object[] insideValue = (Object[]) o;
+            System.out.println("username = " + insideValue[0]);
+            System.out.println("age = " + insideValue[1]);
+
+            // TypeQuery 방식, Object[]타입으로 조회
+            System.out.println("\n************************ TypeQuery 방식, Object[]타입으로 조회 ************************\n");
+            List<Object[]> TQWay = em.createQuery("select m.username, m.age from Member m").getResultList();
+
+            Object[] TQWayList = TQWay.get(0);
+            System.out.println("username = " + TQWayList[0]);
+            System.out.println("age = " + TQWayList[1]);
+
+//            ***************************new 명령어로 조회*************************** 제일 많이 사용되는 좋은 방법
+            // 단순 값을 DTO로 바로 조회
+            // ex) SELECT new jpabook.jpqlUserDTO(m.username, m.age) FROM Member m
+            // 패키지 명을 포함한 전체 클래스 명 입력
+            // 순서와 타입이 일치하는 생성자가 필요하다.
+
+            System.out.println("\n************************ new 명령어로 조회 ************************\n");
+            List<MemberDTO> newWay = em.createQuery("select new jpql.MemberDTO(m.username, m.age) from Member m",
+                            MemberDTO.class).getResultList();
+            MemberDTO memberDTO = newWay.get(0);
+            System.out.println("username = " + memberDTO.getUsername());
+            System.out.println("age = " + memberDTO.getAge());
+
+//            TypedQuery<Member> query = em.createQuery("select m From Member m ", Member.class);
 //            컬렉션 반환
-            List<Member> resultList2 = query.getResultList();
-            for (Member member1 : resultList2) {
-                System.out.println("member1 = " + member1);
-            }
+//            결과가 없으면 빈 리스트 반환
+//            List<Member> resultList2 = query.getResultList();
+//            for (Member member1 : resultList2) {
+//                System.out.println("member1 = " + member1);
+//            }
 
 
-            TypedQuery<Member> query4 = em.createQuery("select m From member m where m.id = '3' ", Member.class);
-//            값이 하나인 경우에
-            Member result = query4.getSingleResult();
-//            SingleResult 인데 안나오거나 많이 나왔을 경우에 어떻게 할것이냐
+//            TypedQuery<Member> query4 = em.createQuery("select m From Member m where m.age = '10' ", Member.class);
+//            결과가 정확히 하나, 단일 객체 반환
+//            Member result = query4.getSingleResult();
+//            SingleResult .. 안나오거나 많이 나왔을 경우 아래와 같다.
 //            결과가 없으면 빈 리스트 반환 javax.persistence.NoResultException
 //            결과가 둘 이상이면 javax.persistence.NoUniqueResultException
-            System.out.println("result = " + result);
+//            Spring Data Jpa -> 결과가 없으면 NULL 반환
+//            System.out.println("result = " + result);
 
 
 //            반환 타입이 문자열일때
-            TypedQuery<String> query2 = em.createQuery("select m.username From member m ", String.class);
+//            TypedQuery<String> query2 = em.createQuery("select m.username From Member m ", String.class);
 
-//            TypedQuery<String> query2 = em.createQuery("select m.username m.age From member m ", String.class);
+//            TypedQuery<String> query2 = em.createQuery("select m.username m.age From Member m ", String.class);
 //             반환 타입 2가지, 이럴때 사용하는 것이 Query
 //             타입이 명확하지 않을때
-            Query query3 = em.createQuery("select m.username m.age From member m ");
+//            Query query3 = em.createQuery("select m.username m.age From Member m ");
 
 
             tx.commit();
