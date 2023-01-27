@@ -6,9 +6,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.List;
 
 
@@ -23,14 +20,43 @@ public class JpaMain {
         tx.begin();
 
         try {
+//            실제로는 사용 많이 안함 너무 가시성이 안좋기 때문에 query DSL 을 많이 사용함. jpql을 사용할 줄 알면 메뉴얼 보고 따라하기 쉬움
+//            CriteriaBuilder cb = em.getCriteriaBuilder();
+//            CriteriaQuery<Member> query = cb.createQuery(Member.class);
+//
+//            Root<Member> m = query.from(Member.class);
+//            CriteriaQuery<Member> cq = query.select(m).where(cb.equal(m.get("username"), "kim"));
+//            List<Member> resultList = em.createQuery(cq).getResultList();
 
+            Book book = new Book();
+            book.setName("JPA");
+            book.setAuthor("김영한");
 
-            CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<Member> query = cb.createQuery(Member.class);
+            em.persist(book);
 
-            Root<Member> m = query.from(Member.class);
-            CriteriaQuery<Member> cq = query.select(m).where(cb.equal(m.get("username"), "kim"));
-            List<Member> resultList = em.createQuery(cq).getResultList();
+            em.createQuery("select i from Item i where type(i) = Book", Item.class)
+                    .getResultList();
+
+//            Member member = new Member();
+//            member.setName("member1");
+//            em.persist(member);
+
+            //            flush -> commit, query 둘 일때 실행됨
+//            db에 query 가 날라가지 않음 data 결과 0,
+
+//            dbConnecttion
+//            dbconn.excuteQuery("select * from member");
+       //     em.flush(); //위와 같은 이유로 강제로 flush를 해줌
+//            JPA를 우회해서 SQL을 실행하기 직전에 영속성 컨텍스트 수동 플러시
+
+//            List<Member> resultList =
+//                    em.createNativeQuery("select MEMBER_ID, city, street, zipcode, name from MEMBER",
+//                                    Member.class).getResultList();
+//
+//            for (Member member1 : resultList) {
+//                System.out.println("member1 = " + member1);
+//
+//            }
 
 
             tx.commit();
