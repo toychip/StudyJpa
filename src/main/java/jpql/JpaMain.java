@@ -1,5 +1,7 @@
 package jpql;
 
+import jdk.internal.org.objectweb.asm.tree.IntInsnNode;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import static jpql.MemberType.ADMIN;
 public class JpaMain {
 
     public static void main(String[] args) {
+//            em.persist(team);\
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("hello");
 
         EntityManager em = emf.createEntityManager();
@@ -19,60 +22,64 @@ public class JpaMain {
         try {
             System.out.println("\n************************ 객체 생성 ************************\n");
 
-            Team team = new Team();
-            team.setName("teamA");
-            em.persist(team);
+//            Team team = new Team();
+//            team.setName("teamA");
             Member member = new Member();
-            member.setUsername("관리자");
-            member.setAge(10);
-            member.setType(ADMIN);
-            member.setTeam(team);       // 연관관계 편의 메서드를 지금 만들기.
-
+            member.setUsername("관리자1");
             em.persist(member);
+
+            Member member2 = new Member();
+            member2.setUsername("관리자2");
+            em.persist(member2);
+
+//            member.setTeam(team);       // 연관관계 편의 메서드를 지금 만들기.
 
             System.out.println("\n************************ em.flush ************************\n");
             em.flush();
             System.out.println("\n************************ em.clear ************************");
             em.clear();
 
-            System.out.println("\n************************ 조건식 CASE ************************");
+            System.out.println("\n************************ JPQL 기본 함수 ************************");
 
-            String query =
-                    "select " +
-                            "case when m.age <= 10 then '학생요금' " +
-                            "     when m.age >= 60 then '경로요금' " +
-                            "     else '일반요금' " +
-                            "end " +
-                    "from Member m";
-            List<String> result = em.createQuery(query, String.class)
+            String concatQuery = "select concat('a', 'b') From Member m ";
+
+            String substringQuery = "select substring(m.username, 2, 3) From Member m ";
+
+            String locateQuery = "select locate('de', 'abcdegf') From Member m ";
+
+            String sizeQuery = "select size(t.members) From Team t ";
+
+            String functionQuery = "select function('group_concat', m.username) From Member m ";
+
+
+            List<String> result = em.createQuery(concatQuery, String.class)
                     .getResultList();
+
+            List<Integer> result2 = em.createQuery(locateQuery, Integer.class)
+                    .getResultList();
+
+            List<Integer> result3 = em.createQuery(sizeQuery, Integer.class)
+                    .getResultList();
+
+            List<String> result4 = em.createQuery(functionQuery, String.class)
+                    .getResultList();
+
             for (String s : result) {
-                System.out.println("s = " + s);
+                System.out.println("concatQuery = " + s);
             }
 
-            System.out.println("\n************************ 조건식 COALESCE ************************");
-            // 하나씩 조회해서 null이 아니면 반환
-
-            String coalesceQuery = "select coalesce(m.username, '이름 없는 회원') from Member m ";
-            List<String> result2 = em.createQuery(coalesceQuery, String.class)
-                    .getResultList();
-
-            for (String s2 : result2) {
-                System.out.println("s2 = " + s2);
+            for (Integer integer : result2) {
+                System.out.println("locateQuery = " + integer);
             }
 
-            System.out.println("\n************************ 조건식 NULLIF ************************");
-            // 두 값이 같으면 null 반환, 다르면 첫번째 값 반환
-            // 예를 들어 관리자의 이름을 숨겨야할때 사용
-
-            String nullIfQuery = "select nullif(m.username, '관리자') as username " +
-                    "from Member m ";
-            List<String> result3 = em.createQuery(nullIfQuery, String.class)
-                    .getResultList();
-
-            for (String s3 : result3) {
-                System.out.println("s2 = " + s3);
+            for (Integer integer : result3) {
+                System.out.println("sizeQuery = " + integer);
             }
+
+            for (String s : result4) {
+                System.out.println("functionQuery = " + s);
+            }
+
 
 
 //            System.out.println("\n************************ selectTypedQuery ************************");
@@ -166,37 +173,12 @@ public class JpaMain {
 
 
 //            //2023.01.26
-//            System.out.println("\n************************ team 객체 생성 ************************\n");
-//
-//            Team team = new Team();
-//            team.setName("teamA");
-//            System.out.println("team persist----------------------------------------");
-//            em.persist(team);
-//
-//
-////            System.out.println("\n************************ em.persist ************************\n");
-//            System.out.println("\n************************ member 객체 생성 ************************\n");
-//            Member member = new Member();
-//            member.setUsername("member1");
-//            member.setAge(10);
-//            member.setTeam(team);       // 연관관계 편의 메서드를 지금 만들기.
-//            System.out.println("member persist----------------------------------------");
-//            em.persist(member);
-//
-//
-//            System.out.println("\n************************ em.flush ************************\n");
-//            em.flush();
-//            System.out.println("\n************************ em.clear ************************");
-//            em.clear();
-//            System.out.println("\n************************ em.clear 종료 ************************");
-//
-//
+
 //            System.out.println("\n************************ inner join query ************************");
 //            String innerJoinQuery = "select m from Member m inner join m.team t";
 //            List<Member> result = em.createQuery(innerJoinQuery, Member.class)
 //                    .getResultList();
 //            System.out.println("result = " + result);
-//
 //
 //            System.out.println("\n************************ left outer join query ************************");
 //            String leftOuterJoinQuery = "select m from Member m left outer join m.team t";  // OUTER 생략 가능
@@ -238,14 +220,50 @@ public class JpaMain {
 //                    // .setParameter("userTypee", ADMIN)   // 파라미터 바인딩
 //                    .getResultList();
 //
-//
-//
 //            for (Object[] objects : result) {
 //                System.out.println("objects[0] = " + objects[0]);
 //                System.out.println("objects[1] = " + objects[1]);
 //                System.out.println("objects[2] = " + objects[2]);
 //            }
-
+////----------------------------------------조건식----------------------------------------
+//            System.out.println("\n************************ 조건식 CASE ************************");
+//
+//            String query =
+//                    "select " +
+//                            "case when m.age <= 10 then '학생요금' " +
+//                            "     when m.age >= 60 then '경로요금' " +
+//                            "     else '일반요금' " +
+//                            "end " +
+//                            "from Member m";
+//            List<String> result = em.createQuery(query, String.class)
+//                    .getResultList();
+//            for (String s : result) {
+//                System.out.println("s = " + s);
+//            }
+//
+//            System.out.println("\n************************ 조건식 COALESCE ************************");
+//            // 하나씩 조회해서 null이 아니면 반환
+//
+//            String coalesceQuery = "select coalesce(m.username, '이름 없는 회원') from Member m ";
+//            List<String> result2 = em.createQuery(coalesceQuery, String.class)
+//                    .getResultList();
+//
+//            for (String s2 : result2) {
+//                System.out.println("s2 = " + s2);
+//            }
+//
+//            System.out.println("\n************************ 조건식 NULLIF ************************");
+//            // 두 값이 같으면 null 반환, 다르면 첫번째 값 반환
+//            // 예를 들어 관리자의 이름을 숨겨야할때 사용
+//
+//            String nullIfQuery = "select nullif(m.username, '관리자') as username " +
+//                    "from Member m ";
+//            List<String> result3 = em.createQuery(nullIfQuery, String.class)
+//                    .getResultList();
+//
+//            for (String s3 : result3) {
+//                System.out.println("s3 = " + s3);
+//            }
 
             tx.commit();
         }catch (Exception e){
