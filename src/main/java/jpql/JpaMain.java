@@ -2,7 +2,6 @@ package jpql;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Objects;
 
 import static jpql.MemberType.ADMIN;
 
@@ -24,7 +23,7 @@ public class JpaMain {
             team.setName("teamA");
             em.persist(team);
             Member member = new Member();
-            member.setUsername("member1");
+            member.setUsername("관리자");
             member.setAge(10);
             member.setType(ADMIN);
             member.setTeam(team);       // 연관관계 편의 메서드를 지금 만들기.
@@ -36,24 +35,45 @@ public class JpaMain {
             System.out.println("\n************************ em.clear ************************");
             em.clear();
 
+            System.out.println("\n************************ 조건식 CASE ************************");
 
-            System.out.println("\n************************ JPQL Enum 타입 표현 ************************");
+            String query =
+                    "select " +
+                            "case when m.age <= 10 then '학생요금' " +
+                            "     when m.age >= 60 then '경로요금' " +
+                            "     else '일반요금' " +
+                            "end " +
+                    "from Member m";
+            List<String> result = em.createQuery(query, String.class)
+                    .getResultList();
+            for (String s : result) {
+                System.out.println("s = " + s);
+            }
 
-            String query = "select m.username, 'HELLO', true From Member m " +
-                    "where m.age between 0 and 10";
-            //where m.type = :userType";     // Enum 은 패키지부터 경로를 전부 적어줘야 인식가능 jpql.MemberType.ADMIN
+            System.out.println("\n************************ 조건식 COALESCE ************************");
+            // 하나씩 조회해서 null이 아니면 반환
 
-            List<Object[]> result = em.createQuery(query)
-                    // .setParameter("userTypee", ADMIN)   // 파라미터 바인딩
+            String coalesceQuery = "select coalesce(m.username, '이름 없는 회원') from Member m ";
+            List<String> result2 = em.createQuery(coalesceQuery, String.class)
                     .getResultList();
 
-
-
-            for (Object[] objects : result) {
-                System.out.println("objects[0] = " + objects[0]);
-                System.out.println("objects[1] = " + objects[1]);
-                System.out.println("objects[2] = " + objects[2]);
+            for (String s2 : result2) {
+                System.out.println("s2 = " + s2);
             }
+
+            System.out.println("\n************************ 조건식 NULLIF ************************");
+            // 두 값이 같으면 null 반환, 다르면 첫번째 값 반환
+            // 예를 들어 관리자의 이름을 숨겨야할때 사용
+
+            String nullIfQuery = "select nullif(m.username, '관리자') as username " +
+                    "from Member m ";
+            List<String> result3 = em.createQuery(nullIfQuery, String.class)
+                    .getResultList();
+
+            for (String s3 : result3) {
+                System.out.println("s2 = " + s3);
+            }
+
 
 //            System.out.println("\n************************ selectTypedQuery ************************");
 //            TypedQuery<Member> query = em.createQuery("select m from Member m where m.username = :username", Member.class);
@@ -206,6 +226,25 @@ public class JpaMain {
 //                    .getResultList();
 //            System.out.println("result5 = " + result5);
 //            System.out.println("result5.size() = " + result5.size());
+
+//              2023.01.27
+//            System.out.println("\n************************ JPQL Enum 타입 표현 ************************");
+//
+//            String query = "select m.username, 'HELLO', true From Member m " +
+//                    "where m.age between 0 and 10";
+//            //where m.type = :userType";     // Enum 은 패키지부터 경로를 전부 적어줘야 인식가능 jpql.MemberType.ADMIN
+//
+//            List<Object[]> result = em.createQuery(query)
+//                    // .setParameter("userTypee", ADMIN)   // 파라미터 바인딩
+//                    .getResultList();
+//
+//
+//
+//            for (Object[] objects : result) {
+//                System.out.println("objects[0] = " + objects[0]);
+//                System.out.println("objects[1] = " + objects[1]);
+//                System.out.println("objects[2] = " + objects[2]);
+//            }
 
 
             tx.commit();
