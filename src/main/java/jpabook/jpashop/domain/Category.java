@@ -27,6 +27,19 @@ public class Category {
     )
     private List<Item> items = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)  // 내 부모니까 ManyToOne이다.
+    @JoinColumn(name = "parent_id")
+    private Category parent;
+    // ^
+    // ㅜ 둘이 매핑
+    @OneToMany(mappedBy = "parent")
+    private List<Category> child = new ArrayList<>();
 
+    // ==== 연관관계 편의 메서드 ==== //
+    public void addChildCategory(Category child){
+        this.child.add(child);
+        child.setParent(this);
+    }
+    // ======================== //
 
 }
