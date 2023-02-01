@@ -2,6 +2,8 @@ package jpabook.jpashop.service;
 
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.repository.MemberRepository;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,12 +12,26 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)      // 데이터를 변경하는 것은 트랜잭션이 꼭 있어야한다,
+//@AllArgsConstructor     // 생성자를 만들어주므로 밑에를 안써도 되는것이다.
+@RequiredArgsConstructor    // final 있는 가지고 있는 필드만 가지고 생성자를 만들어준다.
 public class Memberservice {
 
-    @Autowired
-    private MemberRepository memberRepository;
+//    @Autowired 이렇게 바로 인젝션을하면 테스트를 하거나 등등 고정되어 있으므로 불편함
+    private final MemberRepository memberRepository;  // 밑에 생성자로 자동 연결이기 때문에 변경할 일이 없으므로 final 로 선언해준다.
 
-    @Transactional
+//    @Autowired  // setter 함수로 가짜 memberRepository를 삽입하여 유동적으로 사용할수있다
+//    하지만 누군가 그때 또 만들 수 있으므로 안 좋다.
+//    public void setMemberRepository(MemberRepository memberRepository) {
+//        this.memberRepository = memberRepository;
+//    요즘은 생성자 인젝션을 사용한다.
+
+//    RequiredArgsConstructor를 사용하므로써 생략 가능
+//    @Autowired  // 생성자로 만들었기 때문에 중간에 set 할 수가 없다.
+//    public Memberservice(MemberRepository memberRepository) {
+//        this.memberRepository = memberRepository;
+//    }
+
+    @Transactional  // 위 읽기 전용보다 우선권을 가짐
     // 회원 가입
     public Long join(Member member){
         validateDuplicateMember(member);    // 중복 회원 검증
@@ -41,4 +57,6 @@ public class Memberservice {
     public Member findOne(Long memberId){
         return memberRepository.findOne(memberId);
     }
+
+
 }

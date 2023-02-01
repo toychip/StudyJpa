@@ -1,18 +1,26 @@
 package jpabook.jpashop.repository;
 
 import jpabook.jpashop.domain.Member;
+import lombok.RequiredArgsConstructor;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.Entity;
+//import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+//import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class MemberRepository {
 
-    @PersistenceContext
-    private EntityManager em;
+//    @PersistenceContext
+    private final EntityManager em;
+
+//    @Autowired
+//    public MemberRepository(EntityManager em) {
+//        this.em = em;
+//    }
 
     public void save(Member member){
         em.persist(member);
