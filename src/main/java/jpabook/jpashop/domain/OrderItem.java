@@ -1,13 +1,16 @@
 package jpabook.jpashop.domain;
 
 import jpabook.jpashop.domain.item.Item;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
 @Getter @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItem {
 
     @Id @GeneratedValue
@@ -37,10 +40,12 @@ public class OrderItem {
         return orderItem;
     }
 
+    // 다른 사람이 수정하고 이상하게 넘어가면
+//    protected OrderItem() {} 위 애노테이션으로 생략함
 
     /*
-    비즈니스 로직
-     */
+        비즈니스 로직
+         */
     public void cancel() {
         getItem().addStock(count);  // 주문 수량 원복
     }
