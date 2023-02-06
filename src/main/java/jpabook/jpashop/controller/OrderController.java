@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -26,5 +28,15 @@ public class OrderController {
         model.addAttribute("members", members);
         model.addAttribute("items", items);
         return "order/orderForm";
+    }
+
+    @PostMapping("/order")  //RequestParam은 form summit 방식으로 오면 select속 memberId의 value
+    public String order(@RequestParam("memberId") Long memberId,
+                        @RequestParam("itemId") Long itemId,
+                        @RequestParam("count") int count){
+
+        orderService.order(memberId, itemId, count);
+        return "redirect:/orders";
+//        return "redirect:/orders" + orderId; 나중에 주문된 결과 페이지로 가고 싶으면 다음과 같이 return
     }
 }
