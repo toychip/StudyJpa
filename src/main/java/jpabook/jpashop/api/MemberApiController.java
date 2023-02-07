@@ -2,6 +2,7 @@ package jpabook.jpashop.api;
 
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.service.Memberservice;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -37,9 +38,31 @@ public class MemberApiController {
     }
 
     @PutMapping("/api/v2/members/{id}")
-    public UpdateMemberResponse updateMemberV2(@PathVariable("id") Long id, @RequestBody @Valid UpdateMemberRequest){
+    public UpdateMemberResponse updateMemberV2(
+            @PathVariable("id") Long id,
+            @RequestBody @Valid UpdateMemberRequest request){
 
+        //수정할때는 변경감지 사용하기
+        memberservice.update(id, request.getName());
+//        /query 와 command를 분리하여 개발한다. 개발한다 이렇게 할경우 추후에 유지보수가 비교적 쉬워진다.
+        Member findMember = memberservice.findOne(id);
+
+        return new UpdateMemberResponse(findMember.getId(), findMember.getName());
+        //response dto 반환
     }
+
+    @Data
+    static class UpdateMemberRequest{
+        private String name;
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class UpdateMemberResponse{
+        private Long id;
+        private String name;
+    }
+
     @Data
     static class CreateMemberRequest {
         @NotEmpty   // 이것이 가능 V1과는 다르게

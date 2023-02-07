@@ -58,5 +58,9 @@ public class Memberservice {
         return memberRepository.findOne(memberId);
     }
 
-
+    @Transactional
+    public void update(Long id, String name) {
+        Member member = memberRepository.findOne(id);   // 영속성 컨테스트에서 id를 찾아서 데이터를 긁어올것이다. /영속상태
+        member.setName(name);   // 변경감지
+    }
 }
