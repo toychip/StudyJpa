@@ -12,31 +12,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-@RequiredArgsConstructor
 public class OrderRepository {
+
     private final EntityManager em;
 
-    public void save(Order order){
+    public OrderRepository(EntityManager em) {
+        this.em = em;
+    }
+
+    public void save(Order order) {
         em.persist(order);
     }
 
-    public Order findOne(Long id){
+    public Order findOne(Long id) {
         return em.find(Order.class, id);
     }
 
-   public List<Order> findAllString(OrderSearch orderSearch) {
-
-       // 동적 쿼리기 때문에 바꿔줘야한다.
-       return em.createQuery("select o From Order o join o.member m" +
-                       " where o.status =: status " +
-                       " and m.name like :name", Order.class)    // order 와 member를 join 하는것
-               .setParameter("status", orderSearch.getOrderStatus())
-               .setParameter("name", orderSearch.getMemberName())
-               .setMaxResults(1000) // 최대 1000개까지만 조회됨
-               .getResultList();
-   }
     public List<Order> findAllByString(OrderSearch orderSearch) {
-            // 유지보수 거의 제로에 가깝다 실무 사용 x
+
         String jpql = "select o from Order o join o.member m";
         boolean isFirstCondition = true;
 
@@ -76,7 +69,7 @@ public class OrderRepository {
     }
 
     /**
-     * JPA Criteria 이것 또한 실무에서 사용하지 않는다. 한눈에 안들어오기 때문
+     * JPA Criteria
      */
     public List<Order> findAllByCriteria(OrderSearch orderSearch) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -104,3 +97,4 @@ public class OrderRepository {
     }
 
 }
+

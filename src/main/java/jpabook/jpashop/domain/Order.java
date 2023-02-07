@@ -1,9 +1,9 @@
 package jpabook.jpashop.domain;
 
-import jpabook.jpashop.domain.Delivery;
-import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.domain.OrderItem;
-import jpabook.jpashop.domain.OrderStatus;
+//import jpabook.jpashop.domain.Delivery;
+//import jpabook.jpashop.domain.Member;
+//import jpabook.jpashop.domain.OrderItem;
+//import jpabook.jpashop.domain.OrderStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,17 +28,14 @@ public class Order {
     @JoinColumn(name = "member_id")         // FK 이름
     private Member member;
 
-    @OneToMany(mappedBy = "order" ,cascade = CascadeType.ALL)      // order에 의해 매핑이 된다는 것이다.
-
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)      // order에 의해 매핑이 된다는 것이다.
+    private List<OrderItem> orderItems = new ArrayList<>();
 //    em.persist(orderItemA)
 //    em.persist(orderItemB)
 //    em.persist(orderItemC)
 //    em.persist(order)
 //    원래 이렇게 저장해야하는 것을 CascadeType.ALL을 사용하믕로써 db에 한번의 명령으로 보낸다.
 //    위 코드가     em.persist(order) 한번으로 해결 가능
-
-
-    private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "delivery_id")
@@ -48,7 +45,7 @@ public class Order {
     private LocalDateTime orderDate; // 주문 시간
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus; // 주문 상태 [ORDER, CANCEL]
+    private OrderStatus status; // 주문 상태 [ORDER, CANCEL]
 
     // ==== 연관관계 편의 메서드 ==== //
 
@@ -75,7 +72,7 @@ public class Order {
         for (OrderItem orderItem: orderItems) {
             order.addOrderItem(orderItem);
         }
-        order.setOrderStatus(OrderStatus.ORDER);
+        order.setStatus(OrderStatus.ORDER);
         order.setOrderDate(LocalDateTime.now());
         return order;
     }
@@ -87,7 +84,7 @@ public class Order {
         if (delivery.getDeliveryStatus() == DeliveryStatus.COMP){
             throw new IllegalStateException("이미 배송 완료된 상품은 취소가 불가능합니다.");
         }
-        this.setOrderStatus(OrderStatus.CANCEL);
+        this.setStatus(OrderStatus.CANCEL);
         for (OrderItem orderItem: orderItems) {
             orderItem.cancel();
         }
@@ -104,4 +101,5 @@ public class Order {
 //        return totalPrice;
         return orderItems.stream().mapToInt(OrderItem::getTotalPrice).sum();
     }
+
 }
