@@ -1,0 +1,20 @@
+spring:
+#  datasource:
+#    url: jdbc:h2:mem:test
+##    url을 메모리로 바꿔서 테스트하면 운영에 좀저 효과적이다.
+#    username: sa
+#    password:
+#    driver-class-name: org.h2.Driver
+#
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#    properties:
+#      hibernate:
+#        show_sql: true
+#        format_sql: true
+#     주석 처리해도 스프링부트가 알아서 해줌
+
+logging.level:
+  org.hibernate.SQL: debug
