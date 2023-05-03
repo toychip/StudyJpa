@@ -26,6 +26,12 @@ public class Member {
         this.team = team; // 팀 변경 가능
         team.getMembers().add(this); // 팀을 바꿨으니 팀에 소속된 member도 추가를 해줘야함
     }
+
+    public Member(String username, int age) {
+        this.username = username;
+        this.age = age;
+    }
+
     @Builder
     public Member(String username, int age, Team team) {
         this.username = username;
