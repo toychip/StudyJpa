@@ -10,7 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -128,5 +131,49 @@ class MemberRepositoryTest {
             System.out.println("dto = " + dto);
         }
     }
+    @Test
+    void findByNames() {
+            Member m1 = new Member("AAA", 10);
+            Member m2 = new Member("BBB", 20);
+
+            memberRepository.save(m1);
+            memberRepository.save(m2);
+
+            List<Member> result = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
+
+    @Test
+    void returnType() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findListByUsername("AAA");
+        // 여기서 해당된 값이 만약에 없다면, null이 아니라 빈 Entity를 반환한다.
+        // null이 아니므로 실무에서 자주 쓰임
+
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+
+        // 하지만 단건 조회에서 문제가 된다.
+        // 여기서 매칭이 안되면 Null
+        // 순수 JPA에서는 결과값이 없다면 NoResultEsception이 터짐,
+        // Spring Data Jpa는 결과값이 없다면 감싸서 null로 반환하기 때문
+        Member findMember = memberRepository.findMemberByUsername("AAA");
+        System.out.println("findMember = " + findMember);
+
+        // 있을 수도 있고 없을수도 있으면 Optional을 쓰는게 맞음.
+        // 단건 조회지만 만약에 값이 2개라면, 오류가 터짐
+        Optional<Member> aaa = memberRepository.findOptionalByUsername("AAA");
+        System.out.println("aaa = " + aaa.get());
+    }
+
 
 }
