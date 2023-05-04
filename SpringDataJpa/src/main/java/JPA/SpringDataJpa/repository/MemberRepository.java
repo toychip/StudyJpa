@@ -2,6 +2,9 @@ package JPA.SpringDataJpa.repository;
 
 import JPA.SpringDataJpa.dto.MemberDto;
 import JPA.SpringDataJpa.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,4 +47,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findListByUsername(String username);    // 컬렉션
     Member findMemberByUsername(String username); // 단건
     Optional<Member> findOptionalByUsername(String username);   // 단건 Optional
+
+//    @Query(value = "select m from Member m", countQuery = "select count(m.username) from Member m")
+//    카운트를 하는데 외부조인을 할 필요가 전혀 없음 하지만 jpa는 조인을 하므로 countQuery따로 생성해주기
+
+    @Query(value = "select m from Member m left join m.team t",
+    countQuery = "select count(m) from Member m")
+    Page<Member> findByAge(int age, Pageable pageable);
+//    Slice<Member> findByAge(int age, Pageable pageable);
+//                                  Pageable : query에 대한 조건
 }

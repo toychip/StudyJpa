@@ -7,6 +7,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -175,5 +180,74 @@ class MemberRepositoryTest {
         System.out.println("aaa = " + aaa.get());
     }
 
+    @Test
+    void paging() {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+        memberRepository.save(new Member("member6", 10));
+
+        int age=10;
+        // 0페이지에서 3개 갖고 와   Spring Jpa는 페이지 index가 0부터 시작, 한 페이지의 개수는 3개
+        // 여기서 페이지의 최대 개수나 최소 개수를 정하지 않았음. 임의로 설정 후 데이터를 갖고 온 것.
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.Direction.DESC, "username");
+
+        //when
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+        //total count query까지 같이 날림
+        //api로 반환시 매우 위험, 안좋음
+
+        Page<MemberDto> toMap = page.map(member -> new MemberDto(member.getId(), member.getUsername(), null));
+        //이건 api로 반환 가능
+
+        //then                  // getContent : 내부에 있는 실제 데이터들을 꺼내고 싶을 때, 0번째 페이지에 3개를 가져옴
+        List<Member> content = page.getContent();
+        for (Member member : content) {
+            System.out.println("member-- = " + member);
+        }
+        long totalElements = page.getTotalElements();// getTotalElements -> totalCount와 같은 것이다.
+        System.out.println("totalElements = " + totalElements);
+
+        assertThat(content.size()).isEqualTo(3);    // data를 3개 가져왔으므로
+        assertThat(page.getTotalElements()).isEqualTo(6);   // 총 뎅이터는 6개
+        assertThat(page.getNumber()).isEqualTo(0);  // 현재 페이지 번호 !! 0부터 시작하므로 당연히 0
+        assertThat(page.getTotalPages()).isEqualTo(2); // 총 페이지 개수 6/3 = 2
+        assertThat(page.isFirst()).isTrue();    // 당연히 첫번째 페이지이므로 True
+        assertThat(page.hasNext()).isTrue();    // 다음 페이지가 있냐?
+    }
+
+    @Test
+    void pagingSlicing() { // 지금 slice 적용 안된 상태. repository에 반환타입을 page로 설정해
+//        slice는 더보기와 같은 역할을 함, 3개를 가져오라 하면 +1을 해서 가져옴
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+        memberRepository.save(new Member("member6", 10));
+
+        int age=10;
+        // 0페이지에서 3개 갖고 와   Spring Jpa는 페이지 index가 0부터 시작
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.Direction.DESC, "username");
+
+        //when
+        Slice<Member> page = memberRepository.findByAge(age, pageRequest);
+        //total count query까지 같이 날림
+
+        //then                  // getContent : 내부에 있는 실제 데이터들을 꺼내고 싶을 때, 0번째 페이지에 3개를 가져옴
+        List<Member> content = page.getContent();
+        for (Member member : content) {
+            System.out.println("member-- = " + member);
+        }
+
+        assertThat(content.size()).isEqualTo(3);    // data를 3개 가져왔으므로
+        assertThat(page.getNumber()).isEqualTo(0);  // 현재 페이지 번호 !! 0부터 시작하므로 당연히 0
+        assertThat(page.isFirst()).isTrue();    // 당연히 첫번째 페이지이므로 True
+        assertThat(page.hasNext()).isTrue();    // 다음 페이지가 있냐?
+    }
 
 }
