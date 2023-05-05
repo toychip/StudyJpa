@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,11 +27,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-//@Rollback(value = false)
+@Rollback(value = false)
 class MemberRepositoryTest {
 
     @Autowired MemberRepository memberRepository;
     @Autowired TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
+    @Autowired MemberQueryRepository memberQueryRepository; // test이므로 @Autowired 원래는 생성자 주입으로 해야함
 
     @Test
     public void testMember() {
@@ -261,10 +266,64 @@ class MemberRepositoryTest {
         memberRepository.save(new Member("member7", 70));
 
         int resultCount = memberRepository.bulkAgePlus(20);
+//        em.flush(); 변경되지 않은 것 db에 반영
+//        @Modefying에서 clearAutomatically = true하면 생략 가능
+//        em.clear(); // 벌크 연산 후에는 꼭 영속성 컨텍스트를 날려야함
 
-        memberRepository.findByUsername("member5");
+        List<Member> result = memberRepository.findListByUsername("member5");
+        Member member5 = result.get(0);
+        System.out.println("member5 = " + member5);
 
-        assertThat(resultCount).isEqualTo(7);
+        assertThat(resultCount).isEqualTo(6);
     }
 
+    @Test
+    public void findMemberLazy() {
+        //given
+
+        //member1 -> teamA
+        //member2 -> teamA 각각 참조
+
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamA");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 20, teamA);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> members = memberRepository.findMemberFetchJoin();
+
+        for (Member member : members) {
+            System.out.println("member = " + member.getUsername());
+        }
+    }
+
+
+    @Test
+    public void queryHint() {
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+//        Member findMember = memberRepository.findById(member1.getId()).get();
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        // 스냅샷 생성 x 변경감지 기능 무시
+        findMember.setUsername("member2");
+        //findMember.setUsername("member2");  // member1 -> member2로 이름 바꿈
+
+        em.flush();
+    }
+
+
+    @Test
+    public void callCustom() {
+        List<Member> result = memberRepository.findMemberCustom();
+    }
 }

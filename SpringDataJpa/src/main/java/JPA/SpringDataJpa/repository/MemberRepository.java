@@ -5,16 +5,15 @@ import JPA.SpringDataJpa.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import javax.persistence.QueryHint;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom{
 
     // 쿼리가 단순할 경우
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
@@ -46,20 +45,40 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findByNames(@Param("names") Collection<String> names);
 
     List<Member> findListByUsername(String username);    // 컬렉션
-    Member findByUsername(String username); // 단건
+
+    Member findMemberByUsername(String username); // 단건
+
     Optional<Member> findOptionalByUsername(String username);   // 단건 Optional
 
 //    @Query(value = "select m from Member m", countQuery = "select count(m.username) from Member m")
 //    카운트를 하는데 외부조인을 할 필요가 전혀 없음 하지만 jpa는 조인을 하므로 countQuery따로 생성해주기
 
     @Query(value = "select m from Member m left join m.team t",
-    countQuery = "select count(m) from Member m")
+            countQuery = "select count(m) from Member m")
     Page<Member> findByAge(int age, Pageable pageable);
 //    Slice<Member> findByAge(int age, Pageable pageable);
 //                                  Pageable : query에 대한 조건
 
-    @Modifying // 있어야 excuteUpdate가 실행됨
+    @Modifying(clearAutomatically = true) // 있어야 excuteUpdate가 실행됨, bulk연산시 필수
     @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
     int bulkAgePlus(@Param("age") int age);
 
+
+    @Query("select m from Member m left join fetch m.team")
+        // fetch를 사용하여 member를 select할때 team도 한 번에 같이 조회함
+    List<Member> findMemberFetchJoin();
+
+    @Override
+    @EntityGraph(attributePaths = {"team"})
+    List<Member> findAll();
+
+    // Query + Entity 직접 짠 쿼리문에 fetchjoin 하며 EntityGraph로 사용하는 법
+    @EntityGraph(attributePaths = {"team"})
+    @Query("select m from Member m")
+    List<Member> findMemberEntityGraph();
+
+    // 단순히 읽기만 하기 위해, 메모리를 2번 먹는 것을 방지하기 위해 한 번만 사용하는 방법.
+    @QueryHints(
+            @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(String username);
 }

@@ -111,6 +111,6 @@ class MemberJpaRepositoryTest {
 
         int resultCount = memberJpaRepository.bulkAgePlus(20);
 
-        assertThat(resultCount).isEqualTo(3);
+        assertThat(resultCount).isEqualTo(6);
     }
 }
