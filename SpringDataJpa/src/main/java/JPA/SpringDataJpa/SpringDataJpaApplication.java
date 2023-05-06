@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import java.util.Optional;
 import java.util.UUID;
 
-@EnableJpaAuditing
+//@EnableJpaAuditing
 @SpringBootApplication
 public class SpringDataJpaApplication {
 
@@ -17,9 +17,9 @@ public class SpringDataJpaApplication {
 		SpringApplication.run(SpringDataJpaApplication.class, args);
 	}
 
-	@Bean
-	public AuditorAware<String> auditorAware() {
-		// 여기서 원래 SpringSecurity를 사용하여 세션을 꺼내는 방식을 사용함
-		return () -> Optional.of(UUID.randomUUID().toString());	// Interface에서 메서드가 1개면 람다고 바꿀 수 있음
-	}
+//	@Bean
+//	public AuditorAware<String> auditorAware() {
+//		// 여기서 원래 SpringSecurity를 사용하여 세션을 꺼내는 방식을 사용함
+//		return () -> Optional.of(UUID.randomUUID().toString());	// Interface에서 메서드가 1개면 람다고 바꿀 수 있음
+//	}
 }

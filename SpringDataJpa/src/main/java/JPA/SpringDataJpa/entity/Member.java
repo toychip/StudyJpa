@@ -8,7 +8,7 @@ import javax.persistence.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(of = {"id", "username", "age"})   // 연관관계 field는 ToString 금지 무한루프 가능성
-public class Member extends BaseEntity{
+public class Member { //extends BaseEntity
 
     @Id @GeneratedValue
     @Column(name = "member_id") // 관례적으로 테이블명_id
