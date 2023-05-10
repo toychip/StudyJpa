@@ -6,6 +6,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jpa.querydsl.dto.MemberDto;
+import jpa.querydsl.dto.QMemberDto;
 import jpa.querydsl.dto.UserDto;
 import jpa.querydsl.entity.Member;
 import jpa.querydsl.entity.QMember;
@@ -152,7 +153,8 @@ public class QuerydslIntermediateTest {
 
     @Test
     void findDtoByConstructor() {
-        // 생성자를 활용하여 쿼리 날리면 dto가 달라져도 값의 타입만 맞으면 같기 때문에 생성자를 사용할것
+        // 생성자를 활용하여 쿼리 날리면 dto가 달라져도 값의 타입만 맞으면 같기 때문에 생성자가 좋아보이지만
+        // member.id를 select에서 조회하면 오류 발견됨
         List<UserDto> result = queryFactory
                 .select(Projections.constructor(UserDto.class,
                         member.username,
@@ -166,5 +168,17 @@ public class QuerydslIntermediateTest {
         }
     }
 
+    @Test
+    void findDtoByQueryProjection() {
+        // DTO에다가 추가해야하므로 의존성에 문제가 있을 수 있다.
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age)).distinct()
+                .from(member)
+                .where(member.username.eq("member1"))
+                .fetch();
 
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
 }
