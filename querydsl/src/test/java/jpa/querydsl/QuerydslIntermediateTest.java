@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -225,6 +226,7 @@ public class QuerydslIntermediateTest {
         return queryFactory
                 .selectFrom(member)
 //                .where(usernameEq(usernameCond), ageEq(ageCond))
+//                반환되어 파라미터로 들어온 값이 null이면 무시가 됨
                 .where(allEq(usernameCond, ageCond))
                 .fetch();
     }
@@ -237,18 +239,62 @@ public class QuerydslIntermediateTest {
         return ageCond != null ? member.age.eq(ageCond) : null;
     }
 
-    // 광고 상태 isServiceable, 날짜가 IN: isServicable
-
-    private BooleanExpression allEq(String usernameCond, Integer ageCond){
-        return usernameEq(usernameCond).and(ageEq(ageCond));
-    }
-
+    // 광고 상태 isServiceable, 날짜가 IN: isServicable 조립 가능 메서드로 나누어서 한 번에,
 //    private BooleanExpression isServicable(String usernameCond, Integer ageCond) {
 //        return isValid()
 //    }
 
-    // 조합 가능
-//    private BooleanExpression allEq(String usernameCond, Integer ageCond) {
-//        return usernameEq(usernameCond).and(ageEq(ageCond));
-//    }
+    private BooleanExpression allEq(String usernameCond, Integer ageCond){
+        return usernameEq(usernameCond).and(ageEq(ageCond));
+
+    }
+
+// 쿼리 한 번에 대량 수정
+// 번크연산.. ex) 모든 개발자의 연봉을 인상해
+
+    @Test
+    void bulkUpdate() {
+//        회원의 나이가 28세 이하이면 비회원이라는 이름으로 바꿈
+        //      영속성 컨텍스트    DB
+        // member1 = 10 ->      비회원
+        // member2 = 20 ->      비회원
+        // member3 = 30 ->      member3
+        // member4 = 40 ->      member4
+//      바로 db에 값을 넣는 벌크 연산
+
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+        em.flush();
+        em.clear();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    @Test
+    public void bulkAdd() {
+        // 모든 회원의 나이를 1살 더하기 , 빼고 싶으면 add(-1)
+//        곲하기는 multiply()
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+    }
+
+    @Test
+    void bulkDelete() {
+//        18살 이상의 모든 회원을 지우는 Query
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+    }
+
 }
