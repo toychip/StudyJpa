@@ -2,15 +2,18 @@ package jpa.querydsl.repository;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jpa.querydsl.dto.MemberSearchCondition;
 import jpa.querydsl.dto.MemberTeamDto;
 import jpa.querydsl.dto.QMemberTeamDto;
+import jpa.querydsl.entity.Member;
 import jpa.querydsl.entity.QMember;
 import jpa.querydsl.entity.QTeam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -98,7 +101,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
                 .fetch();
 
         // querydsl의 Total count 직접 설정, count query 최적화
-        long total = queryFactory
+        JPAQuery<Member> countQuery = queryFactory
                 .select(QMember.member)
                 .from(QMember.member)
                 .leftJoin(QMember.member.team, QTeam.team)
@@ -106,11 +109,16 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
                         teamnameEq(condition.getTeamName()),
                         ageGoe(condition.getAgeGoe()),
                         ageLoe(condition.getAgeLoe())
-                )
-                .fetchCount();
+                );
 
-        return new PageImpl<>(content, pageable, total);
+//        countquery.fetchCount(); 이걸 해야 실제로 countQuery가 날람
+
+//        return new PageImpl<>(content, pageable, total);
+        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchCount());
+//               컨텐츠 size < page size일때 컨첸츠가 적으니 이걸 totalCount로 사용, 마지막 페이지도 같은 원리
+
     }
+
 
     private BooleanExpression usernameEq(String username) {
         return hasText(username) ? QMember.member.username.eq(username) : null ;
