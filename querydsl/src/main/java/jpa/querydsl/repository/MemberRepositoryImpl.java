@@ -1,5 +1,6 @@
 package jpa.querydsl.repository;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jpa.querydsl.dto.MemberSearchCondition;
@@ -7,6 +8,9 @@ import jpa.querydsl.dto.MemberTeamDto;
 import jpa.querydsl.dto.QMemberTeamDto;
 import jpa.querydsl.entity.QMember;
 import jpa.querydsl.entity.QTeam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -40,6 +44,72 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
                         ageLoe(condition.getAgeLoe())
                 )
                 .fetch();
+    }
+
+    @Override
+    public Page<MemberTeamDto> searchPageSimple(MemberSearchCondition condition, Pageable pageable) {
+        QueryResults<MemberTeamDto> results = queryFactory
+                .select(new QMemberTeamDto(
+                        QMember.member.id.as("memberId"),
+                        QMember.member.username,
+                        QMember.member.age,
+                        QTeam.team.id.as("teamId"),
+                        QTeam.team.name.as("teamName")
+                ))
+                .from(QMember.member)
+                .leftJoin(QMember.member.team, QTeam.team)
+                .where(
+                        usernameEq(condition.getUsername()),
+                        teamnameEq(condition.getTeamName()),
+                        ageGoe(condition.getAgeGoe()),
+                        ageLoe(condition.getAgeLoe())
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
+
+        List<MemberTeamDto> content = results.getResults();
+        long total = results.getTotal();
+        // querydsl이 자동으로 만들어줌
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<MemberTeamDto> searchPageComplex(MemberSearchCondition condition, Pageable pageable) {
+        List<MemberTeamDto> content = queryFactory
+                .select(new QMemberTeamDto(
+                        QMember.member.id.as("memberId"),
+                        QMember.member.username,
+                        QMember.member.age,
+                        QTeam.team.id.as("teamId"),
+                        QTeam.team.name.as("teamName")
+                ))
+                .from(QMember.member)
+                .leftJoin(QMember.member.team, QTeam.team)
+                .where(
+                        usernameEq(condition.getUsername()),
+                        teamnameEq(condition.getTeamName()),
+                        ageGoe(condition.getAgeGoe()),
+                        ageLoe(condition.getAgeLoe())
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // querydsl의 Total count 직접 설정, count query 최적화
+        long total = queryFactory
+                .select(QMember.member)
+                .from(QMember.member)
+                .leftJoin(QMember.member.team, QTeam.team)
+                .where(usernameEq(condition.getUsername()),
+                        teamnameEq(condition.getTeamName()),
+                        ageGoe(condition.getAgeGoe()),
+                        ageLoe(condition.getAgeLoe())
+                )
+                .fetchCount();
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     private BooleanExpression usernameEq(String username) {
